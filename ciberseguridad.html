@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anticiparse al Ciberataque 2026</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-base: #0f172a; /* Slate 900 */
+            --bg-panel: #1e293b; /* Slate 800 */
+            --accent-cyan: #22d3ee; /* Cyan 400 */
+            --accent-blue: #3b82f6; /* Blue 500 */
+            --accent-red: #ef4444; /* Red 500 */
+            --text-main: #f8fafc; /* Slate 50 */
+            --text-muted: #94a3b8; /* Slate 400 */
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #020617; /* Slate 950 */
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden; /* Evitar scroll, es una presentación */
+        }
+
+        .slide {
+            width: 1280px;
+            height: 720px;
+            background-color: var(--bg-base);
+            border-radius: 12px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            position: absolute; /* Para superponerlas */
+            overflow: hidden;
+            display: none; /* Ocultas por defecto */
+            flex-direction: column;
+            padding: 60px;
+            box-sizing: border-box;
+            border: 1px solid #334155;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        /* Clase activa para mostrar la diapositiva actual */
+        .slide.active {
+            display: flex;
+            opacity: 1;
+            z-index: 10;
+        }
+
+        /* Tech Background Pattern */
+        .slide::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: 
+                linear-gradient(rgba(34, 211, 238, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(34, 211, 238, 0.05) 1px, transparent 1px);
+            background-size: 30px 30px;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
+        .slide > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Typography */
+        h1, h2, h3 { margin: 0; }
+        h1 { font-size: 3.5rem; font-weight: 700; background: linear-gradient(to right, var(--text-main), var(--accent-cyan)); -webkit-background-clip: text; color: transparent; }
+        h2 { font-size: 2.5rem; font-weight: 700; color: var(--accent-cyan); margin-bottom: 30px; border-bottom: 2px solid rgba(34, 211, 238, 0.2); padding-bottom: 10px; }
+        h3 { font-size: 1.5rem; font-weight: 600; color: var(--text-main); margin-bottom: 15px; }
+        p, li { font-size: 1.2rem; line-height: 1.6; color: var(--text-muted); }
+        strong { color: var(--text-main); }
+
+        /* Layouts */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            flex-grow: 1;
+        }
+
+        .panel {
+            background-color: var(--bg-panel);
+            padding: 30px;
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-blue);
+        }
+
+        .panel.alert { border-left-color: var(--accent-red); }
+
+        /* Lists */
+        ul { list-style: none; padding: 0; margin: 0; }
+        li { margin-bottom: 15px; padding-left: 35px; position: relative; }
+        li::before {
+            content: '>';
+            position: absolute;
+            left: 0;
+            color: var(--accent-cyan);
+            font-family: 'Fira Code', monospace;
+            font-weight: 600;
+        }
+
+        /* Timeline (Kill Chain) */
+        .timeline {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 40px;
+            position: relative;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 25px; left: 0; right: 0;
+            height: 4px;
+            background: #334155;
+            z-index: 0;
+        }
+        .timeline-step {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            width: 200px;
+        }
+        .timeline-step .circle {
+            width: 50px; height: 50px;
+            background: var(--bg-base);
+            border: 4px solid var(--accent-cyan);
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+        .timeline-step.danger .circle { border-color: var(--accent-red); }
+
+        /* Code Blocks */
+        .code-block {
+            background-color: #020617;
+            font-family: 'Fira Code', monospace;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            font-size: 1.1rem;
+            color: #cbd5e1;
+            overflow-x: auto;
+        }
+        .code-prompt { color: var(--accent-cyan); }
+        .code-cmd { color: #f8fafc; font-weight: 600; }
+        .code-comment { color: #64748b; font-style: italic; }
+
+        /* Header / Footer */
+        .slide-footer {
+            margin-top: auto;
+            display: flex;
+            justify-content: space-between;
+            color: #64748b;
+            font-size: 0.9rem;
+            border-top: 1px solid #334155;
+            padding-top: 20px;
+        }
+        
+        /* Navigation Controls Overlay */
+        .nav-controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+        .nav-btn {
+            background-color: rgba(30, 41, 59, 0.8);
+            border: 1px solid #334155;
+            color: var(--text-main);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .nav-btn:hover {
+            background-color: var(--accent-blue);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- DIAPOSITIVA 1: PORTADA -->
+    <div class="slide active">
+        <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; text-align: center;">
+            <i class="fa-solid fa-shield-virus" style="font-size: 5rem; color: var(--accent-cyan); margin-bottom: 30px;"></i>
+            <h1 style="margin-bottom: 20px;">Anticiparse al Ciberataque</h1>
+            <h3 style="color: var(--text-muted); font-size: 1.8rem; font-weight: 400; max-width: 800px; margin-bottom: 50px;">
+                Servicios de Misión Crítica, Detección, Respuesta y Resiliencia en Entornos Cloud 2026
+            </h3>
+            <div style="background: var(--bg-panel); padding: 20px 40px; border-radius: 50px; border: 1px solid #334155;">
+                <p style="margin: 0; font-size: 1.4rem; color: var(--text-main); font-weight: 600;">Juan Antonio Merino Contreras</p>
+                <p style="margin: 0; font-size: 1rem;">Desarrollador y Administrador de Sistemas y Red</p>
+            </div>
+            <p style="position: absolute; bottom: 30px; font-size: 0.9rem; color: #64748b;">Usa las flechas del teclado (← →) o la barra espaciadora para navegar</p>
+        </div>
+    </div>
+
+    <!-- DIAPOSITIVA 2: EL TABLERO DE JUEGO -->
+    <div class="slide">
+        <h2>01. El Tablero de Juego (2026)</h2>
+        <div class="content-grid">
+            <div>
+                <p>La IA generativa y la automatización han convertido el cibercrimen en una industria hiper-eficiente. Ya no gestionamos sistemas, gestionamos objetivos en constante asedio.</p>
+                
+                <div class="panel alert" style="margin-top: 30px;">
+                    <h3><i class="fa-solid fa-clock"></i> Métricas Críticas</h3>
+                    <ul>
+                        <li><strong>Tiempo de Permanencia:</strong> &lt; 48 horas (Antes 8 días).</li>
+                        <li><strong>Explotación Activa:</strong> &lt; 10 minutos tras obtener acceso inicial.</li>
+                        <li><strong>Impacto:</strong> 11.3 billones de dólares anuales.</li>
+                    </ul>
+                </div>
+            </div>
+            <div>
+                <h3>El fin del Malware Tradicional</h3>
+                <p>El 82% de las intrusiones actuales no utilizan ejecutables maliciosos, evadiendo los EDR/Antivirus convencionales.</p>
+                <ul>
+                    <li><strong>Uso de herramientas nativas (LotL):</strong> Uso intensivo de binarios del propio sistema operativo (PowerShell, WMI, PsExec) para no dejar rastro.</li>
+                    <li><strong>Ataques de Identidad:</strong> No necesitan "romper" la puerta; entran usando credenciales legítimas comprometidas.</li>
+                    <li><strong>Evasión:</strong> Inyección directa en memoria (malware sin archivos) y evasión de telemetría de los Registros de Eventos de Windows.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="slide-footer"><span>Bloque 1 - Contexto</span><span class="slide-counter">2 / 9</span><span>Juan Antonio Merino Contreras</span></div>
+    </div>
+
+    <!-- DIAPOSITIVA 3: CAMBIO DE PARADIGMA -->
+    <div class="slide">
+        <h2>02. De la Reacción a la Misión Crítica</h2>
+        <div class="content-grid">
+            <div class="panel">
+                <h3 style="color: var(--accent-red);"><i class="fa-solid fa-xmark"></i> Modelo Tradicional (Reactivo)</h3>
+                <ul>
+                    <li><strong>Objetivo:</strong> Disponibilidad (Que el servidor responda).</li>
+                    <li><strong>Perímetro:</strong> Basado en Firewalls de red y VPNs.</li>
+                    <li><strong>Detección:</strong> Basada en firmas conocidas (Antivirus).</li>
+                    <li><strong>Respuesta:</strong> Manual, horas o días tras la alerta.</li>
+                    <li><strong>Fallo:</strong> Un componente comprometido puede tumbar toda la infraestructura (Movimiento lateral libre).</li>
+                </ul>
+            </div>
+            <div class="panel" style="border-left-color: var(--accent-cyan);">
+                <h3 style="color: var(--accent-cyan);"><i class="fa-solid fa-check"></i> Misión Crítica (Resiliencia)</h3>
+                <ul>
+                    <li><strong>Objetivo:</strong> Resiliencia (Sobrevivir operando bajo un ataque).</li>
+                    <li><strong>Perímetro:</strong> Basado en la Identidad (Zero Trust).</li>
+                    <li><strong>Detección:</strong> Basada en anomalías de comportamiento (SIEM/XDR).</li>
+                    <li><strong>Respuesta:</strong> Automatizada en segundos (SOAR).</li>
+                    <li><strong>Fallo:</strong> Asumimos la brecha. Aislamiento automático y micro-segmentación.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="slide-footer"><span>Bloque 1 - Paradigma</span><span class="slide-counter">3 / 9</span><span>Juan Antonio Merino Contreras</span></div>
+    </div>
+
+    <!-- DIAPOSITIVA 4: LA AMENAZA MUTANTE -->
+    <div class="slide">
+        <h2>03. La Amenaza Mutante: Ransomware 3.0</h2>
+        <p>El ransomware moderno se basa en la <strong>"Extorsión Pura"</strong>. Ya no se molestan en cifrar los discos locales; extraen datos críticos silenciosamente por canales como DNS o ICMP y extorsionan a nivel reputacional.</p>
+        
+        <h3 style="margin-top: 40px; text-align: center;">Anatomía de un Ataque (48 Horas)</h3>
+        <div class="timeline">
+            <div class="timeline-step">
+                <div class="circle">T+0</div>
+                <strong>Acceso Inicial</strong>
+                <p style="font-size: 0.9rem;">Phishing, Credenciales expuestas o RDP abierto.</p>
+            </div>
+            <div class="timeline-step">
+                <div class="circle">T+2h</div>
+                <strong>Persistencia</strong>
+                <p style="font-size: 0.9rem;">Escalada de privilegios y movimiento lateral (LotL).</p>
+            </div>
+            <div class="timeline-step">
+                <div class="circle">T+12h</div>
+                <strong>Exfiltración</strong>
+                <p style="font-size: 0.9rem;">Robo silencioso de bases de datos y propiedad intelectual.</p>
+            </div>
+            <div class="timeline-step danger">
+                <div class="circle">T+48h</div>
+                <strong>Extorsión</strong>
+                <p style="font-size: 0.9rem;">Cifrado masivo (opcional) y demanda de rescate.</p>
+            </div>
+        </div>
+        <div class="slide-footer"><span>Bloque 2 - Amenazas</span><span class="slide-counter">4 / 9</span><span>Juan Antonio Merino Contreras</span></div>
+    </div>
+
+    <!-- DIAPOSITIVA 5: VIGILANCIA Y CLOUD -->
+    <div class="slide">
+        <h2>04. Superficie de Ataque Oculta</h2>
+        <div class="content-grid">
+            <div>
+                <h3><i class="fa-solid fa-eye"></i> Vigilancia Digital (OSINT/Dark Web)</h3>
+                <p>Las defensas internas no sirven si la amenaza nace fuera de vuestro perímetro.</p>
+                <ul>
+                    <li>Las credenciales de los empleados se venden en foros de la Dark Web semanas antes del ataque.</li>
+                    <li>Monitorización activa de repositorios públicos (ej. secretos en GitHub) y fugas de datos (Leaked Credentials).</li>
+                </ul>
+            </div>
+            <div>
+                <h3><i class="fa-solid fa-cloud"></i> Riesgos Cloud y IAM</h3>
+                <p>En 2026, el proveedor cloud no es el riesgo; el riesgo es vuestra administración.</p>
+                <ul>
+                    <li><strong>TI en la sombra (Shadow IT):</strong> Recursos huérfanos desplegados sin control de TI.</li>
+                    <li><strong>Mala configuración de IAM:</strong> Roles excesivamente permisivos. Un error en un JSON de políticas de AWS/Azure expone todo un bucket de datos.</li>
+                    <li>El 99% de las brechas en la nube recaen en el <em>Modelo de Responsabilidad Compartida</em> del cliente.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="slide-footer"><span>Bloque 2 - Identidad y Cloud</span><span class="slide-counter">5 / 9</span><span>Juan Antonio Merino Contreras</span></div>
+    </div>
+
+    <!-- DIAPOSITIVA 6: ARQUITECTURA -->
+    <div class="slide">
+        <h2>05. El Tridente del Administrador (Arquitectura)</h2>
+        <p>Monitorización 24/7 no es un humano mirando logs. Es correlación inteligente e IA ejecutando acciones de contención en segundos.</p>
+        
+        <div style="display: flex; gap: 20px; margin-top: 30px;">
+            <div class="panel" style="flex: 1;">
+                <h3><i class="fa-solid fa-network-wired"></i> XDR</h3>
+                <p><strong>Visibilidad Unificada</strong></p>
+                <p style="font-size: 1rem;">Cruza telemetría del Endpoint, identidad, red y Cloud. Permite detectar técnicas <em>fileless</em> que el AV ignora.</p>
+            </div>
+            <div class="panel" style="flex: 1;">
+                <h3><i class="fa-solid fa-brain"></i> SIEM</h3>
+                <p><strong>Cerebro Analítico</strong></p>
+                <p style="font-size: 1rem;">Ingesta y correlación centralizada de logs en tiempo real para detectar patrones (ej. un <em>Beaconing</em> sospechoso hacia una IP externa).</p>
+            </div>
+            <div class="panel" style="flex: 1; border-left-color: var(--accent-cyan);">
+                <h3><i class="fa-solid fa-bolt"></i> SOAR</h3>
+                <p><strong>Brazo Ejecutor</strong></p>
+                <p style="font-size: 1rem;">Automatiza la respuesta mediante Playbooks. Aísla un host infectado de la VLAN instantáneamente sin intervención humana.</p>
+            </div>
+        </div>
+        <div class="slide-footer"><span>Bloque 3 - Defensa</span><span class="slide-counter">6 / 9</span><span>Juan Antonio Merino Contreras</span></div>
+    </div>
+
+    <!-- DIAPOSITIVA 7: INVESTIGACIÓN -->
+    <div class="slide">
+        <h2>06. Gestión Quirúrgica de Incidentes</h2>
+        <div class="content-grid">
+            <div>
+                <h3>Análisis Forense Digital</h3>
+                <p>Borrar el malware no soluciona la brecha. Es imperativo saber qué hicieron y qué se llevaron.</p>
+                <ul>
+                    <li><strong>Forense en Caliente:</strong> Volcado de memoria RAM para capturar claves de cifrado o procesos inyectados antes de que la máquina se reinicie.</li>
+                    <li><strong>Análisis de Línea Temporal:</strong> Reconstrucción cronológica exacta a partir del Visor de Eventos (Windows) y tráfico de red (PCAP).</li>
+                </ul>
+            </div>
+            <div class="panel">
+                <h3><i class="fa-solid fa-chess-knight"></i> Simulación de Incidentes (Tabletop)</h3>
+                <p>Entrenamiento bajo presión para validar el plan de crisis.</p>
+                <ul>
+                    <li><strong>Técnico:</strong> ¿Sabemos qué segmentar en el switch core si entra un gusano?</li>
+                    <li><strong>Ejecutivo:</strong> ¿Quién habla con medios/legal si exfiltran datos de clientes?</li>
+                </ul>
+            </div>
+        </div>
+        <div class="slide-footer"><span>Bloque 4 - Respuesta</span><span class="slide-counter">7 / 9</span><span>Juan Antonio Merino Contreras</span></div>
+    </div>
+
+    <!-- DIAPOSITIVA 8: ESTRATEGIA Y VERIFICACIÓN -->
+    <div class="slide">
+        <h2>07. Verificación Ofensiva y Diseño Seguro</h2>
+        <div class="content-grid">
+            <div>
+                <h3><i class="fa-solid fa-crosshairs"></i> Equipo Rojo vs Test de Intrusión</h3>
+                <p>No basta con escanear puertos (CTEM continuo). El Equipo Rojo (Red Team) simula un adversario real, intentando vulnerar controles físicos, engañar a usuarios (Ingeniería Social) y medir la capacidad de detección del equipo defensivo (Blue Team).</p>
+            </div>
+            <div>
+                <h3><i class="fa-solid fa-shield-halved"></i> Ingeniería de Seguridad</h3>
+                <ul>
+                    <li><strong>Confianza Cero (Zero Trust):</strong> Asumir compromiso previo. Verificación de identidad estricta incluso dentro de la LAN.</li>
+                    <li><strong>Micro-segmentación:</strong> Restricciones de red a nivel de host/aplicación.</li>
+                    <li><strong>Copias de seguridad inmutables:</strong> Almacenamiento WORM (Escribir una vez, leer muchas). Inalterables incluso si el atacante consigue credenciales de <em>Administrador de Dominio</em>.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="slide-footer"><span>Bloque 5 - Verificación</span><span class="slide-counter">8 / 9</span><span>Juan Antonio Merino Contreras</span></div>
+    </div>
+
+    <!-- DIAPOSITIVA 9: ANEXO TÉCNICO -->
+    <div class="slide">
+        <h2>08. Anexo Técnico: Auditoría Windows en Caliente</h2>
+        <p>Comandos y configuraciones operativas para administradores de sistemas orientadas a mitigar ataques LotL e identificar movimientos laterales.</p>
+        
+        <div class="code-block" style="margin-bottom: 20px;">
+            <span class="code-comment"># Detección de cuentas inactivas en Directorio Activo (Vectores habituales de acceso inicial)</span><br>
+            <span class="code-prompt">PS C:\></span> <span class="code-cmd">Get-ADUser</span> -Filter * -Properties LastLogonDate | Where { $_.LastLogonDate -lt (Get-Date).AddDays(-90) }
+        </div>
+        
+        <div class="code-block" style="margin-bottom: 20px;">
+            <span class="code-comment"># Bastionado (Hardening) de PowerShell: Restringir funciones avanzadas del lenguaje para usuarios estándar</span><br>
+            <span class="code-prompt">PS C:\></span> $ExecutionContext.SessionState.LanguageMode = <span class="code-cmd">"ConstrainedLanguage"</span>
+        </div>
+
+        <div style="background: var(--bg-panel); padding: 15px; border-radius: 8px;">
+            <strong>Telemetría Crítica (Visor de Eventos):</strong> Asegurar la recolección centralizada del <strong>Event ID 4624</strong> (Inicios de sesión exitosos en horas anómalas) y <strong>4688</strong> (Creación de procesos con <em>Auditoría de línea de comandos</em> habilitada para ver los argumentos de ejecución).
+        </div>
+        <div class="slide-footer"><span>Bloque 6 - Operativa</span><span class="slide-counter">9 / 9</span><span>Juan Antonio Merino Contreras</span></div>
+    </div>
+
+    <!-- Botones flotantes (opcionales) por si se usa solo el ratón -->
+    <div class="nav-controls">
+        <button class="nav-btn" onclick="prevSlide()"><i class="fa-solid fa-chevron-left"></i></button>
+        <button class="nav-btn" onclick="nextSlide()"><i class="fa-solid fa-chevron-right"></i></button>
+    </div>
+
+    <!-- Lógica de navegación inyectada -->
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+
+        function showSlide(index) {
+            // Limites circulares
+            if (index >= slides.length) currentSlide = 0;
+            else if (index < 0) currentSlide = slides.length - 1;
+            else currentSlide = index;
+
+            // Ocultar todas y mostrar la actual
+            slides.forEach(slide => slide.classList.remove('active'));
+            slides[currentSlide].classList.add('active');
+        }
+
+        function nextSlide() { showSlide(currentSlide + 1); }
+        function prevSlide() { showSlide(currentSlide - 1); }
+
+        // Navegación por teclado
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') {
+                e.preventDefault();
+                nextSlide();
+            } else if (e.key === 'ArrowLeft' || e.key === 'Backspace') {
+                e.preventDefault();
+                prevSlide();
+            }
+        });
+    </script>
+</body>
+</html>
