@@ -41,9 +41,14 @@
         .btn-osint:hover { background: #06b6d4; transform: scale(1.02); }
         .home-btn { position: absolute; top: 60px; right: 60px; color: var(--text-muted); text-decoration: none; font-size: 1.5rem; z-index: 50; }
         .home-btn:hover { color: var(--accent-cyan); }
-        .osint-profile { position: absolute; top: 20px; right: 20px; width: 100px; height: 100px; border-radius: 8px; border: 2px solid var(--accent-cyan); display: none; object-fit: cover; box-shadow: 0 0 15px rgba(34, 211, 238, 0.3); }
+        .osint-images-container { position: absolute; top: 20px; right: 20px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; max-width: 300px; z-index: 5; }
+        .osint-profile-wrapper { position: relative; animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .osint-profile { width: 60px; height: 60px; border-radius: 8px; border: 2px solid var(--text-muted); object-fit: cover; box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); transition: 0.3s; }
+        .osint-profile.found { border-color: var(--accent-cyan); box-shadow: 0 0 15px rgba(34, 211, 238, 0.4); }
+        .osint-platform-icon { position: absolute; bottom: -5px; right: -5px; background: #020617; border-radius: 50%; padding: 4px; font-size: 14px; border: 1px solid var(--accent-cyan); color: var(--text-main); }
         .cursor-blink { animation: blink 1s step-end infinite; }
         @keyframes blink { 50% { opacity: 0; } }
+        @keyframes popIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     </style>
 </head>
 <body>
@@ -135,7 +140,7 @@
         </div>
 
         <div class="code-block" id="term-container">
-            <img id="osint-profile-img" class="osint-profile" src="" alt="Profile">
+            <div id="osint-images-container" class="osint-images-container"></div>
             <div id="term-output">
                 <span class="code-prompt">root@kali:~#</span> Esperando objetivo...<span class="cursor-blink">█</span><br>
             </div>
@@ -274,10 +279,9 @@
             if(!target) return;
             
             const term = document.getElementById('term-output');
-            const profileImg = document.getElementById('osint-profile-img');
+            const imagesContainer = document.getElementById('osint-images-container');
             
-            profileImg.style.display = 'none';
-            profileImg.src = '';
+            imagesContainer.innerHTML = '';
             
             term.innerHTML = `<span class="code-prompt">root@kali:~#</span> sherlock --timeout 1 ${target}<br><br><span style="color: #94a3b8">[*] Inicializando motor OSINT sobre 300 APIs (v.2026.4)...</span><br>`;
             escaneando = true;
@@ -285,6 +289,8 @@
             await new Promise(r => setTimeout(r, 800));
             term.innerHTML += `<span style="color: #94a3b8">[*] Extrayendo metadata global para alias '${target}'</span><br><br>`;
             
+            let baseAvatarUrl = '';
+
             // Llama a API Real de Github - Este es un ejemplo de investigación "real" OSINT
             try {
                 term.innerHTML += `<span style="color: #cbd5e1">[*] API_CALL => https://api.github.com/users/${target}</span><br>`;
@@ -299,8 +305,14 @@
                     if(ghData.name) term.innerHTML += `    <i class="fa-solid fa-arrow-turn-up fa-rotate-90" style="color:#64748b;"></i> <span>Nombre real extraído: "${ghData.name}"</span><br>`;
                     if(ghData.company) term.innerHTML += `    <i class="fa-solid fa-arrow-turn-up fa-rotate-90" style="color:#64748b;"></i> <span>Empresa asociada: "${ghData.company}"</span><br>`;
                     
-                    profileImg.src = ghData.avatar_url;
-                    profileImg.style.display = 'block';
+                    baseAvatarUrl = ghData.avatar_url;
+                    
+                    imagesContainer.innerHTML += `
+                        <div class="osint-profile-wrapper">
+                            <img class="osint-profile found" src="${baseAvatarUrl}" alt="GitHub Profile">
+                            <i class="fa-brands fa-github osint-platform-icon"></i>
+                        </div>
+                    `;
                 } else {
                     term.innerHTML += `<span style="color:#ef4444; font-weight:bold;">[-] NO ENCONTRADO</span> - GitHub<br>`;
                 }
@@ -310,19 +322,39 @@
             term.scrollTop = term.scrollHeight;
 
             // Simular el resto con determinismo en base al nombre
-            const simPlataformas = ['Instagram', 'TikTok', 'Twitch', 'Roblox', 'Reddit', 'Steam (Comunidad)'];
+            const simPlataformas = [
+                { name: 'Instagram', icon: 'fa-instagram' },
+                { name: 'TikTok', icon: 'fa-tiktok' }, 
+                { name: 'Twitch', icon: 'fa-twitch' }, 
+                { name: 'Reddit', icon: 'fa-reddit' }, 
+                { name: 'Steam (Comunidad)', icon: 'fa-steam' }
+            ];
             
             for(let i = 0; i < simPlataformas.length; i++) {
                 await new Promise(r => setTimeout(r, 400 + Math.random() * 600)); 
-                const randCode = target.length * (i + 5); 
-                const existe = (randCode % 3) !== 0; 
+                const charSum = target.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+                const randCode = charSum + (i * 13);
+                const existe = (randCode % 10) < 8; // Probabilidad aumentada al 80%
                 
                 const color = existe ? '#10b981' : '#ef4444';
                 const status = existe ? '[+] ENCONTRADO' : '[-] NO ENCONTRADO';
-                const url = existe ? `https://${simPlataformas[i].toLowerCase().replace(' (comunidad)','').trim()}.com/${target}` : '';
+                const platName = simPlataformas[i].name;
+                const platCleanName = platName.toLowerCase().replace(' (comunidad)','').trim();
+                const url = existe ? `https://${platCleanName}.com/${target}` : '';
                 
-                term.innerHTML += `<span style="color:${color}; font-weight:bold;">${status}</span> - ${simPlataformas[i]}${existe ? ': <a href="'+url+'" target="_blank" style="color:#2563eb">'+url+'</a>' : ''}<br>`;
+                term.innerHTML += `<span style="color:${color}; font-weight:bold;">${status}</span> - ${platName}${existe ? ': <a href="'+url+'" target="_blank" style="color:#2563eb">'+url+'</a>' : ''}<br>`;
                 term.scrollTop = term.scrollHeight;
+                
+                if (existe) {
+                    const avatarSrc = baseAvatarUrl || `https://i.pravatar.cc/150?u=${target}${platCleanName}`;
+                    const iconStyle = (simPlataformas[i].icon.includes('gamepad')) ? 'fa-solid' : 'fa-brands';
+                    imagesContainer.innerHTML += `
+                        <div class="osint-profile-wrapper">
+                            <img class="osint-profile found" src="${avatarSrc}" alt="${platName} Profile" onerror="this.src='https://ui-avatars.com/api/?name=${target}&background=random'">
+                            <i class="${iconStyle} ${simPlataformas[i].icon} osint-platform-icon"></i>
+                        </div>
+                    `;
+                }
             }
             
             term.innerHTML += `<br><span style="color: #94a3b8">[*] Mapeo finalizado. Reporte exportado a /root/reports/${target}.txt</span><br><span class="code-prompt">root@kali:~#</span> <span class="cursor-blink">█</span>`;
