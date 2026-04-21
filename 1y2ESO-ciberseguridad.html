@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ciberseguridad - 1º y 2º ESO</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --bg-base: #0f172a; --bg-panel: #1e293b; --accent-cyan: #22d3ee; --accent-blue: #3b82f6; --accent-red: #ef4444; --text-main: #f8fafc; --text-muted: #94a3b8; }
+        body { margin: 0; padding: 0; background-color: #020617; font-family: 'Inter', sans-serif; color: var(--text-main); display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        .slide { width: 92vw; max-width: 1280px; height: 92vh; max-height: 850px; background-color: var(--bg-base); border-radius: 12px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); position: absolute; overflow-y: auto; overflow-x: hidden; display: none; flex-direction: column; padding: 40px; box-sizing: border-box; border: 1px solid #334155; opacity: 0; transition: opacity 0.3s ease-in-out; }
+        /* Fluid typography fix */
+        h1 { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 700; background: linear-gradient(to right, var(--text-main), var(--accent-cyan)); -webkit-background-clip: text; color: transparent; }
+        h2 { font-size: clamp(1.8rem, 4vw, 2.5rem); font-weight: 700; color: var(--accent-cyan); margin-bottom: 20px; border-bottom: 2px solid rgba(34, 211, 238, 0.2); padding-bottom: 10px; text-transform: uppercase; }
+        h3 { font-size: clamp(1.2rem, 2.5vw, 1.5rem); font-weight: 600; color: var(--text-main); margin-bottom: 10px; text-transform: uppercase; }
+        p, li { font-size: clamp(1rem, 1.5vw, 1.2rem); line-height: 1.5; color: var(--text-muted); }
+        .slide.active { display: flex; opacity: 1; z-index: 10; }
+        .slide::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: linear-gradient(rgba(34, 211, 238, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(34, 211, 238, 0.05) 1px, transparent 1px); background-size: 30px 30px; z-index: 0; pointer-events: none; opacity: 0.5; }
+        .slide > * { position: relative; z-index: 1; }
+        h1, h2, h3 { margin: 0; }
+
+        strong { color: var(--text-main); }
+        .content-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; flex-grow: 1; }
+        .panel { background-color: var(--bg-panel); padding: 30px; border-radius: 8px; border-left: 4px solid var(--accent-blue); }
+        .panel.alert { border-left-color: var(--accent-red); }
+        ul { list-style: none; padding: 0; margin: 0; }
+        li { margin-bottom: 15px; padding-left: 35px; position: relative; }
+        li::before { content: '>'; position: absolute; left: 0; color: var(--accent-cyan); font-family: 'Fira Code', monospace; font-weight: 600; }
+        .slide-footer { margin-top: auto; display: flex; justify-content: space-between; color: #64748b; font-size: 0.9rem; border-top: 1px solid #334155; padding-top: 20px; align-items: center; }
+        .nav-controls { position: fixed; bottom: 20px; right: 20px; display: flex; gap: 10px; z-index: 100; }
+        .nav-btn { background-color: rgba(30, 41, 59, 0.8); border: 1px solid #334155; color: var(--text-main); width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+        .nav-btn:hover { background-color: var(--accent-blue); color: white; }
+        .home-btn { position: absolute; top: 60px; right: 60px; color: var(--text-muted); text-decoration: none; font-size: 1.5rem; z-index: 50; }
+        .home-btn:hover { color: var(--accent-cyan); }
+        
+        /* Controles y UI Phishing Móvil */
+        .btn-act { padding: 15px 30px; font-size: 1.2rem; font-family: 'Fira Code', monospace; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; transition: 0.2s; }
+        .btn-danger { background-color: var(--accent-red); color: white; border: 1px solid var(--accent-red); }
+        .btn-safe { background-color: #10b981; color: white; border: 1px solid #10b981; }
+        .btn-next { background-color: var(--accent-cyan); color: #020617; display: none; margin-top: 15px; }
+        .btn-act:hover { opacity: 0.8; transform: scale(1.05); }
+
+        #mobile-wrapper { display: flex; gap: 30px; align-items: flex-start; justify-content: center; margin-top: 10px; }
+        #mobile-device { width: 340px; height: 480px; background: #ffffff; border-radius: 20px; border: 10px solid #1e293b; box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden; display: flex; flex-direction: column; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; }
+        .mobile-header-bar { background: #f1f5f9; height: 30px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: center; align-items: center; font-size: 0.75rem; color: #64748b; font-weight: 600; letter-spacing: 0.5px;}
+        .mobile-app-header { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #e2e8f0; background: #ffffff; }
+        .app-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: white; font-size: 1.2rem; margin-right: 12px; }
+        .app-info { flex: 1; }
+        .app-name { font-weight: 700; color: #0f172a; font-size: 0.95rem; line-height: 1.2; }
+        .app-meta { font-size: 0.8rem; color: #64748b; }
+        #phishing-content { flex-grow: 1; padding: 15px; background: #ffffff; color: #1e293b; overflow-y: auto; font-size: 0.95rem; line-height: 1.5; }
+        
+        .phishing-dashboard { flex: 1; display: flex; flex-direction: column; justify-content: flex-start; }
+        .score-board { display: flex; gap: 20px; margin-bottom: 20px; }
+        .score-badge { background: var(--bg-panel); padding: 15px; border-radius: 8px; border: 1px solid #334155; text-align: center; flex: 1; }
+        .score-value { font-size: 2rem; font-weight: bold; color: var(--accent-cyan); font-family: 'Fira Code', monospace; }
+        
+        /* Ocultamos las citas para diseño limpio */
+        .citation { display: none; }
+    </style>
+</head>
+<body>
+
+    <a href="hub.html" class="home-btn" title="Volver al Hub"><i class="fa-solid fa-house"></i></a>
+
+    <!-- SLIDE 1 -->
+    <div class="slide active">
+        <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; text-align: center;">
+            <i class="fa-solid fa-user-secret" style="font-size: 5rem; color: var(--accent-cyan); margin-bottom: 30px;"></i>
+            <h1 style="margin-bottom: 20px;">HACKING ÉTICO</h1>
+            <h3 style="color: var(--text-muted); font-size: 1.8rem; font-weight: 400;">Magia, Mitos y Redes Sociales (1º y 2º ESO)</h3>
+            <p style="position: absolute; bottom: 30px; font-size: 0.9rem;">Usa las flechas del teclado (← →) para navegar</p>
+        </div>
+        <div class="slide-footer"><span class="slide-title">Bloque 1 - Introducción</span><span class="slide-counter"></span></div>
+    </div>
+
+    <!-- SLIDE 2 -->
+    <div class="slide">
+        <h2>EL MITO DEL HACKER</h2>
+        <div class="content-grid">
+            <div>
+                <img src="https://img-v3.deepdreamgenerator.com/3843859/md_jwu0nh_b4385b7759b78fb937c1b7f163843de9b041b5a1.jpg" style="width: 100%; border-radius: 8px; border: 1px solid #334155; box-shadow: 0 10px 30px rgba(0,0,0,0.5); object-fit: cover; height: 350px;" alt="Hacker con capucha verde">
+                <p style="font-size: 0.8rem; text-align: center; margin-top: 10px; color: var(--text-muted);">Source: deepdreamgenerator.com</p>
+            </div>
+            <div>
+                <p>El cine nos hace creer que los hackers son villanos con capucha en un sótano oscuro.</p>
+                <div class="panel alert" style="margin-top: 20px; padding: 20px;">
+                    <h3><i class="fa-solid fa-mask"></i> Sombreros Negros</h3>
+                    <p>Black Hat: Ciberdelincuentes que rompen sistemas para robar datos o dinero.</p>
+                </div>
+                <div class="panel" style="border-left-color: var(--accent-cyan); margin-top: 20px; padding: 20px;">
+                    <h3 style="color: var(--accent-cyan);"><i class="fa-solid fa-shield-halved"></i> Sombreros Blancos</h3>
+                    <p>White Hat (Nosotros): Rompemos los sistemas con permiso para poder arreglarlos antes de que lleguen los malos. Un hacker ético usa su conocimiento para defender a las personas.</p>
+                </div>
+            </div>
+        </div>
+        <div class="slide-footer"><span class="slide-title">Bloque 2 - Mitos vs Realidad</span><span class="slide-counter"></span></div>
+    </div>
+
+    <!-- SLIDE 3 -->
+    <div class="slide">
+        <h2>TU VIDA EN INTERNET</h2>
+        <div class="content-grid">
+            <div>
+                <div class="panel" style="margin-bottom: 20px;">
+                    <h3><i class="fa-brands fa-instagram"></i> REDES SOCIALES</h3>
+                    <p>Tu vida en Internet no es tan privada como crees. Cada foto en Instagram o TikTok puede revelar tus horarios o lugares frecuentes.</p>
+                </div>
+                <div class="panel" style="border-left-color: var(--accent-red);">
+                    <h3><i class="fa-solid fa-location-dot"></i> METADATOS</h3>
+                    <p>Esa foto inofensiva que acabas de enviar esconde metadatos: la marca de tu móvil, la hora exacta y las coordenadas GPS exactas.</p>
+                </div>
+            </div>
+            <div>
+                <div class="panel alert" style="height: 100%;">
+                    <h3 style="color: var(--accent-red);"><i class="fa-solid fa-gamepad"></i> VIDEOJUEGOS</h3>
+                    <p>Ingeniería social pura: Promesas de PaVos o Robux gratis son trampas para robar tus credenciales de Fortnite, Roblox o Valorant.</p>
+                    <p style="margin-top: 20px;">Los ciberdelincuentes saben que deseáis esas skins, y crean páginas falsas idénticas a las oficiales donde vosotros mismos introducís el usuario y la contraseña, regalándoles la cuenta para siempre.</p>
+                </div>
+            </div>
+        </div>
+        <div class="slide-footer"><span class="slide-title">Bloque 3 - Privacidad y Juegos</span><span class="slide-counter"></span></div>
+    </div>
+
+    <!-- SLIDE 4 -->
+    <div class="slide">
+        <h2>DEEPFAKES y FAKE NEWS</h2>
+        <div class="content-grid">
+            <div class="panel alert">
+                <h3><i class="fa-solid fa-user-astronaut"></i> Clonación de Voz y Video (Deepfakes)</h3>
+                <ul>
+                    <li>Con una IA, unos pocos segundos de audio de tu voz son suficientes para clonarla perfectamente.</li>
+                    <li>Los atacantes llaman a los padres simulando ser sus hijos en peligro para pedir dinero de urgencia.</li>
+                    <li><strong>Solución:</strong> Acuerda una "palabra clave" de seguridad con tu familia que solo vosotros sepáis.</li>
+                </ul>
+            </div>
+            <div>
+                <div class="panel" style="border-left-color: var(--accent-cyan); height: 100%;">
+                    <h3><i class="fa-solid fa-newspaper"></i> Desinformación en TikTok</h3>
+                    <p style="margin-top: 15px;">No todo lo que ves es real. Imágenes generadas por IA y videos sacados de contexto. Verifica siempre la fuente de la información antes de compartir y contribuir a una cadena falsa.</p>
+                </div>
+            </div>
+        </div>
+        <div class="slide-footer"><span class="slide-title">Bloque 4 - Nueva Amenaza IA</span><span class="slide-counter"></span></div>
+    </div>
+
+    <!-- SLIDE 5: JUEGO PHISHING MEJORADO -->
+    <div class="slide">
+        <h2 style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
+            <i class="fa-solid fa-mobile-screen-button" style="color:var(--accent-cyan);"></i>
+            JUEGO: CAZA PHISHING
+        </h2>
+        <p style="margin: 0 0 10px 0;">¿ERES CAPAZ DE DETECTAR LA TRAMPA? Revisa URLs, urgencia, faltas de ortografía y remitentes raros en este móvil virtual.</p>
+
+        <div id="mobile-wrapper">
+            <!-- Dispositivo Móvil Falso -->
+            <div id="mobile-device">
+                <div class="mobile-header-bar">14:38 AM | 5G 100%</div>
+                <div class="mobile-app-header">
+                    <div class="app-icon" id="phishing-icon" style="background:#2563eb;"><i class="fa-solid fa-envelope"></i></div>
+                    <div class="app-info">
+                        <div class="app-name" id="phishing-sender">Cargando...</div>
+                        <div class="app-meta" id="phishing-address"></div>
+                    </div>
+                </div>
+                <div id="phishing-content"></div>
+            </div>
+
+            <!-- Panel de Control y FeedBack -->
+            <div class="phishing-dashboard">
+                <div class="score-board">
+                    <div class="score-badge">
+                        <div style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 5px;">Caso Actual</div>
+                        <div class="score-value" id="phishing-counter">1 / 5</div>
+                    </div>
+                    <div class="score-badge">
+                        <div style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 5px;">Puntos Vidas</div>
+                        <div class="score-value" id="phishing-score" style="color: #10b981;"><i class="fa-solid fa-heart"></i><i class="fa-solid fa-heart"></i><i class="fa-solid fa-heart"></i></div>
+                    </div>
+                </div>
+
+                <div id="phishing-actions" style="display: flex; gap: 15px; margin-bottom: 30px;">
+                    <button class="btn-act btn-danger" onclick="verificar(true)"><i class="fa-solid fa-biohazard"></i> ES PHISHING (TRAMPA)</button>
+                    <button class="btn-act btn-safe" onclick="verificar(false)"><i class="fa-solid fa-shield-check"></i> ES LEGÍTIMO</button>
+                </div>
+
+                <div id="feedback" style="font-size: 1.2rem; font-weight: bold; line-height: 1.5; min-height: 80px;"></div>
+                <button id="next-btn-phishing" class="btn-act btn-next" onclick="siguienteEscenario()">Siguiente Caso <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+        </div>
+
+        <div class="slide-footer"><span class="slide-title">Bloque 5 - Simulación Interactiva</span><span class="slide-counter"></span></div>
+    </div>
+
+    <!-- SLIDE 6 -->
+    <div class="slide">
+        <h2>EL PELIGRO DE TU CLAVE</h2>
+        <div class="content-grid">
+            <div style="display: flex; flex-direction: column; justify-content: center; text-align: center;">
+                <div style="font-family: 'Fira Code', monospace; font-size: 7rem; color: var(--accent-red); font-weight: 700; line-height: 1;">0.05s</div>
+                <h3 style="color: var(--accent-cyan); margin-top: 20px;">TIEMPO EN ROMPER "123456"</h3>
+            </div>
+            <div>
+                <div class="panel">
+                    <h3>FUERZA BRUTA EN ACCIÓN</h3>
+                    <ul>
+                        <li>Los atacantes no adivinan tu clave, usan programas automatizados que prueban millones de combinaciones en segundos (Ataque de diccionario).</li>
+                        <li>Una contraseña que sea el nombre de tu mascota o fecha de cumpleaños es vulnerable en instantes.</li>
+                        <li>Una contraseña compleja larga (ej: <em>Mi_Gat0_Loco_2026!</em>) tardaría muchos años en resolverse.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="slide-footer"><span class="slide-title">Bloque 6 - Criptografía y Hashes</span><span class="slide-counter"></span></div>
+    </div>
+
+    <!-- SLIDE 7 -->
+    <div class="slide">
+        <h2>LA BÓVEDA INEXPUGNABLE</h2>
+        <div class="content-grid">
+            <div>
+                <p>Es imposible memorizar 50 contraseñas diferentes y seguras para cada red social o juego.</p>
+                <div class="panel alert" style="margin-top: 20px; border-left-color: var(--accent-blue);">
+                    <h3><i class="fa-solid fa-vault"></i> Gestores de Contraseñas</h3>
+                    <ul>
+                        <li>Aplicaciones (Bitwarden, 1Password, KeePass) que crean y guardan contraseñas increíblemente complejas por ti.</li>
+                        <li>Tú solo tienes que memorizar <strong>una única "Contraseña Maestra"</strong>. El gestor rellena automáticamente el resto en tus apps.</li>
+                        <li>Soluciona el riesgo de usar la misma contraseña en todos lados.</li>
+                    </ul>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: center;">
+                <i class="fa-solid fa-key" style="font-size: 10rem; color: #cbd5e1; opacity: 0.5;"></i>
+            </div>
+        </div>
+        <div class="slide-footer"><span class="slide-title">Bloque 7 - Soluciones Criptográficas</span><span class="slide-counter"></span></div>
+    </div>
+
+    <!-- SLIDE 8 -->
+    <div class="slide">
+        <h2>Postura de Seguridad Básica</h2>
+        <p>Protegerte de todo esto no requiere ser un hacker nivel leyenda. Configura esto en tu móvil hoy:</p>
+        
+        <div style="display: flex; gap: 20px; margin-top: 30px;">
+            <div class="panel" style="flex: 1;">
+                <h3><i class="fa-solid fa-shield-halved"></i> Doble Factor (2FA)</h3>
+                <p>Actívalo en tus redes. Si te roban la clave, el hacker se quedará bloqueado porque le pedirá tu huella o un código SMS de tu teléfono físico.</p>
+            </div>
+            <div class="panel" style="flex: 1; border-left-color: var(--accent-cyan);">
+                <h3><i class="fa-solid fa-camera"></i> Cámara y Apps</h3>
+                <p>Desactiva las "Etiquetas de ubicación" de tu cámara de fotos, y no des permisos de micrófono o contactos a apps extrañas como "Linterna Free".</p>
+            </div>
+            <div class="panel" style="flex: 1; border-left-color: var(--accent-red);">
+                <h3><i class="fa-solid fa-eye-slash"></i> Perfil Cerrado</h3>
+                <p>Un Instagram o TikTok público es un folio abierto para que alguien descargue tus fotos e intente suplantarte o extorsionarte. Ciérralo.</p>
+            </div>
+        </div>
+        <div class="slide-footer"><span class="slide-title">Bloque 8 - Prevención</span><span class="slide-counter"></span></div>
+    </div>
+
+    <!-- SLIDE 9 -->
+    <div class="slide">
+        <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; text-align: center;">
+            <i class="fa-solid fa-graduation-cap" style="font-size: 5rem; color: var(--accent-blue); margin-bottom: 30px;"></i>
+            <h1 style="margin-bottom: 20px;">¿Preguntas?</h1>
+            <p style="font-size: 1.8rem; max-width: 800px;">La informática te da el poder de entender y proteger tu mundo digital.</p>
+            <div class="panel" style="margin-top: 40px; border-left: none; border-bottom: 4px solid var(--accent-cyan); display: inline-block;">
+                <h3 style="margin: 0; color: var(--accent-cyan);">Estudia en Extremadura | Ingeniería & FP</h3>
+            </div>
+        </div>
+        <div class="slide-footer"><span class="slide-title">Bloque 9 - Cierre</span><span class="slide-counter"></span></div>
+    </div>
+
+    <div class="nav-controls">
+        <button class="nav-btn" onclick="prevSlide()"><i class="fa-solid fa-chevron-left"></i></button>
+        <button class="nav-btn" onclick="nextSlide()"><i class="fa-solid fa-chevron-right"></i></button>
+    </div>
+
+    <script>
+        // Navegación de Diapositivas
+        let currentSlide = 0; const slides = document.querySelectorAll('.slide');
+        
+        function updateCounters() {
+            document.querySelectorAll('.slide').forEach((slide, index) => {
+                const counter = slide.querySelector('.slide-counter');
+                if (counter) counter.innerText = (index + 1) + ' / ' + slides.length;
+            });
+        }
+
+        function showSlide(index) {
+            if (index >= slides.length) currentSlide = 0; else if (index < 0) currentSlide = slides.length - 1; else currentSlide = index;
+            slides.forEach(slide => slide.classList.remove('active')); slides[currentSlide].classList.add('active');
+        }
+        function nextSlide() { showSlide(currentSlide + 1); } function prevSlide() { showSlide(currentSlide - 1); }
+        document.addEventListener('keydown', (e) => { if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); } else if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); } });
+
+        // Motor del Juego de Phishing
+        const escenarios = [
+            {
+                app: "Email", icon: "fa-envelope", color: "#2563eb",
+                remitente: "Soporte lnstagram", direccion: "security@instgram-alert.com",
+                cuerpo: "<div style='font-weight:bold; font-size:1.1rem; margin-bottom:10px; color:#ef4444;'>URGENTE: Alguien ha intentado entrar en tu cuenta</div>Hola,<br><br>Hemos detectado un inicio de sesión inusual en tu cuenta. Si no has sido tú, haz clic en el siguiente enlace de forma inmediata. Si no verificas la propiedad, suspenderemos la cuenta en 24 horas.<br><br><div style='text-align:center; margin-top:20px;'><a href='#' style='background:#2563eb; color:white; padding:10px 20px; border-radius:6px; text-decoration:none; font-weight:bold; display:inline-block;'>Verificar mi cuenta ahora</a></div>",
+                esTrampa: true, explicacion: "El dominio es falso (instgram-alert). Crea urgencia amenazando con borrar tu cuenta para que no pienses y pinches."
+            },
+            {
+                app: "WhatsApp", icon: "fa-whatsapp", color: "#10b981", appMode: "chat",
+                remitente: "+34 688 123 456", direccion: "Mamá (Supuestamente)",
+                cuerpo: "<div style='background:#e2e8f0; padding:10px; border-radius:12px 12px 12px 0; margin-bottom:10px; width:80%;'>Hola cariño. Se me ha estropeado el teléfono y te escribo desde el móvil de un compañero de trabajo. 😰</div><div style='background:#e2e8f0; padding:10px; border-radius:12px 12px 12px 0; width:80%;'>Tengo que pagar una factura urgente ahora mismo y no me va el banco. ¿Puedes hacerme un Bizum rápido a este número de 150€? Te lo devuelvo esta noche prometido. 🙏</div>",
+                esTrampa: true, explicacion: "Estafa clásica de WhatsApp. Fingen ser familiares con problemas graves (sentido de urgencia) pidiendo transferencias desde números desconocidos."
+            },
+            {
+                app: "Email", icon: "fa-envelope", color: "#ef4444",
+                remitente: "Roblox Support <noreply@roblox.com>", direccion: "noreply@roblox.com",
+                cuerpo: "<div style='font-weight:bold; font-size:1.1rem; margin-bottom:10px;'>Confirmación de inicio de sesión de cuenta</div>¡Hola!<br><br>Notamos que se inició sesión en su cuenta de Roblox recientemente desde un nuevo dispositivo (Windows, Chrome, Madrid, ES).<br><br>Si fue usted, no necesita hacer nada. Si no reconoce esta actividad, por favor cambie la contraseña de su cuenta inmediatamente desde la configuración oficial.<br><br>Equipo de seguridad de Roblox.",
+                esTrampa: false, explicacion: "Es legítimo. El dominio es oficial (@roblox.com). Solo informa, NO TE OBLIGA a pinchar en ningún enlace directo y tiene un tono informativo, no amenaza."
+            },
+            {
+                app: "Email", icon: "fa-envelope", color: "#f59e0b",
+                remitente: "Correos Exprés", direccion: "info@aduanas-pak.com",
+                cuerpo: "<div style='font-weight:bold; font-size:1.1rem; margin-bottom:10px;'>Su paquete está retenido</div>Estimado cliente,<br><br>Su envío internacional se encuentra retenido en nuestras instalaciones de aduanas. Para programar la entrega hoy mismo, es necesario abonar las tasas de gestión de 2,35€.<br><br><div style='text-align:center; margin-top:20px;'><a href='#' style='background:#f59e0b; color:white; padding:10px 20px; border-radius:6px; text-decoration:none; font-weight:bold; display:inline-block;'>Abonar tasas (2,35€)</a></div>",
+                esTrampa: true, explicacion: "Estafa de paquetería SMS/Mail. Te piden un pago minúsculo solo para que metas los datos de tu tarjeta bancaria real en su web falsa y robártela entera."
+            },
+            {
+                app: "TikTok", icon: "fa-tiktok", color: "#000000",
+                remitente: "TikTok Promos Offical", direccion: "@tiktok_gift_spain01",
+                cuerpo: "<div style='font-weight:bold; font-size:1.1rem; margin-bottom:10px;'>🎉 ¡ÚLTIMA HORA! 🎉</div>¡Has sido seleccionado al azar entre nuestros seguidores para recibir un iPhone 15 Pro Max!<br><br>Solo hay 3 unidades disponibles. Reclámalo RÁPIDO metiendo tu correo y contraseña de TikTok aquí:<br><br><a href='#' style='color:#3b82f6;'>http://reclama-tu-premio-seguro.ru/iphone/</a>",
+                esTrampa: true, explicacion: "Nadie regala iPhones gigantes por azar en TikTok. La cuenta tiene faltas ortográficas ('Offical'), crea excesiva urgencia en rojo/mayúsculas, pide tu contraseña, y la URL de destino es rusa .ru."
+            }
+        ];
+
+        let escenarioActual = 0;
+        let vidas = 3;
+
+        function renderizarVidas() {
+            let html = "";
+            for(let i=0; i<3; i++){
+                html += (i < vidas) ? '<i class="fa-solid fa-heart" style="margin-right:5px;"></i>' : '<i class="fa-regular fa-heart" style="margin-right:5px; color:#64748b;"></i>';
+            }
+            if(vidas === 0) html = "<span style='color:var(--accent-red);'>GAME OVER</span>";
+            document.getElementById('phishing-score').innerHTML = html;
+        }
+
+        function cargarEscenario() {
+            const container = document.getElementById('phishing-content');
+            const fb = document.getElementById('feedback');
+            const btnNext = document.getElementById('next-btn-phishing');
+            const actions = document.getElementById('phishing-actions');
+
+            fb.innerHTML = "";
+            btnNext.style.display = "none";
+            
+            if(escenarioActual < escenarios.length && vidas > 0) {
+                actions.style.display = "flex";
+                const esc = escenarios[escenarioActual];
+                
+                // Actualizar UI del móvil
+                document.getElementById('phishing-icon').innerHTML = `<i class="${esc.appMode === 'chat' ? 'fa-brands' : 'fa-solid'} ${esc.icon}"></i>`;
+                document.getElementById('phishing-icon').style.background = esc.color;
+                document.getElementById('phishing-sender').innerText = esc.remitente;
+                document.getElementById('phishing-address').innerText = esc.direccion;
+                
+                container.innerHTML = `<div style="${esc.appMode === 'chat' ? 'margin-top: 10px;' : 'margin-top: 5px;'}">${esc.cuerpo}</div>`;
+                
+                document.getElementById('phishing-counter').innerText = `${escenarioActual + 1} / ${escenarios.length}`;
+            } else {
+                actions.style.display = "none";
+                document.getElementById('mobile-device').style.display = "none";
+                
+                if (vidas > 0) {
+                    fb.innerHTML = `<h3 style='color: #10b981; font-size: 2.5rem; margin-bottom: 10px;'><i class="fa-solid fa-trophy"></i> ¡AUDITORÍA SUPERADA!</h3><p style='color: #cbd5e1; font-size: 1.2rem;'>Habéis sobrevivido al mundo digital. Buen trabajo localizando las trampas.</p>`;
+                } else {
+                    fb.innerHTML = `<h3 style='color: var(--accent-red); font-size: 2.5rem; margin-bottom: 10px;'><i class="fa-solid fa-skull"></i> TE HAN HACKEADO</h3><p style='color: #cbd5e1; font-size: 1.2rem;'>Tus cuentas y datos bancarios han sido robados. Tienes que extremar las precauciones en la red.</p>`;
+                }
+            }
+        }
+
+        function verificar(esDenunciaTrampa) {
+            if (vidas <= 0) return;
+            const esc = escenarios[escenarioActual];
+            const fb = document.getElementById('feedback');
+            const actions = document.getElementById('phishing-actions');
+            const btnNext = document.getElementById('next-btn-phishing');
+
+            actions.style.display = "none";
+            btnNext.style.display = "inline-block";
+
+            // esDenunciaTrampa significa que el usuario ha dicho que es Mentira/Trampa
+            if(esDenunciaTrampa === esc.esTrampa) {
+                fb.style.color = '#10b981';
+                fb.innerHTML = `<i class='fa-solid fa-shield-check'></i> ¡CORRECTO!<br><span style="font-size: 1rem; color: #cbd5e1; font-weight: normal; font-family: 'Inter', sans-serif;">${esc.explicacion}</span>`;
+            } else {
+                vidas--;
+                renderizarVidas();
+                fb.style.color = 'var(--accent-red)';
+                if(esc.esTrampa){
+                    // Era trampa y le diste a seguro
+                    fb.innerHTML = `<i class='fa-solid fa-triangle-exclamation'></i> ¡ERROR GRAVE! Acabas de caer en la trampa y te han hackeado.<br><span style="font-size: 1rem; color: #cbd5e1; font-weight: normal; font-family: 'Inter', sans-serif;">${esc.explicacion}</span>`;
+                } else {
+                    // Era seguro y le diste a trampa (falso positivo)
+                    fb.innerHTML = `<i class='fa-solid fa-triangle-exclamation'></i> ¡INCORRECTO! Eras demasiado paranoico, este mensaje era seguro.<br><span style="font-size: 1rem; color: #cbd5e1; font-weight: normal; font-family: 'Inter', sans-serif;">${esc.explicacion}</span>`;
+                }
+            }
+        }
+
+        function siguienteEscenario() {
+            escenarioActual++;
+            cargarEscenario();
+        }
+
+        window.onload = function() {
+            updateCounters();
+            renderizarVidas();
+            cargarEscenario();
+        };
+    </script>
+</body>
+</html>

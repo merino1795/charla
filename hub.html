@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hub Ciberseguridad - Extremadura</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --bg-base: #0f172a; --bg-panel: #1e293b; --accent-cyan: #22d3ee; --accent-blue: #3b82f6; --accent-red: #ef4444; --text-main: #f8fafc; --text-muted: #94a3b8; }
+        body { margin: 0; padding: 0; background-color: #020617; font-family: 'Inter', sans-serif; color: var(--text-main); display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        .slide { width: 1280px; height: 720px; background-color: var(--bg-base); border-radius: 12px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); position: absolute; display: flex; flex-direction: column; padding: 60px; box-sizing: border-box; border: 1px solid #334155; z-index: 10; }
+        .slide::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: linear-gradient(rgba(34, 211, 238, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(34, 211, 238, 0.05) 1px, transparent 1px); background-size: 30px 30px; z-index: 0; pointer-events: none; opacity: 0.5; }
+        .slide > * { position: relative; z-index: 1; }
+        h1 { font-size: 3.5rem; font-weight: 700; background: linear-gradient(to right, var(--text-main), var(--accent-cyan)); -webkit-background-clip: text; background-clip: text; color: transparent; text-align: center; margin-bottom: 10px;}
+        p { font-size: 1.2rem; color: var(--text-muted); text-align: center; margin-bottom: 50px; }
+        .hub-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; flex-grow: 1; align-items: center; }
+        .hub-panel { background-color: var(--bg-panel); padding: 40px 30px; border-radius: 8px; border-left: 4px solid var(--accent-cyan); text-decoration: none; color: var(--text-main); display: flex; flex-direction: column; align-items: center; text-align: center; transition: all 0.2s; border: 1px solid #334155; border-left-width: 4px; }
+        .hub-panel:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(34, 211, 238, 0.1); border-color: var(--accent-cyan); }
+        .hub-panel i { font-size: 4rem; color: var(--accent-cyan); margin-bottom: 20px; }
+        .hub-panel h3 { font-size: 1.5rem; margin: 0 0 15px 0; }
+        .hub-panel p { font-size: 1rem; margin: 0; text-align: left; }
+    </style>
+</head>
+<body>
+    <div class="slide">
+        <div style="margin-top: 40px;">
+            <h1>Charlas de Ciberseguridad</h1>
+            <p>Laboratorios interactivos para fomento de Ingeniería y FP en Extremadura</p>
+        </div>
+        <div class="hub-grid">
+            <a href="1y2ESO-ciberseguridad.html" class="hub-panel">
+                <i class="fa-solid fa-user-ninja"></i>
+                <h3>1º y 2º ESO</h3>
+                <p>Magia, mitos del hacking y redes sociales. Identificación de phishing y ataques en videojuegos.</p>
+            </a>
+            <a href="3y4ESO-ciberseguridad.html" class="hub-panel" style="border-left-color: var(--accent-blue);">
+                <i class="fa-solid fa-network-wired" style="color: var(--accent-blue);"></i>
+                <h3 style="color: var(--accent-blue);">3º y 4º ESO</h3>
+                <p>Ingeniería social, control de dispositivos, ransomware, OSINT y conexiones públicas.</p>
+            </a>
+            <a href="1y2Bachillerato-Ciberseguridad.html" class="hub-panel" style="border-left-color: var(--accent-red);">
+                <i class="fa-solid fa-terminal" style="color: var(--accent-red);"></i>
+                <h3 style="color: var(--accent-red);">Bachillerato</h3>
+                <p>Arquitectura defensiva, vulnerabilidades web (SQLi/XSS), Cyber Kill Chain y mercado laboral.</p>
+            </a>
+        </div>
+    </div>
+</body>
+</html>
+```

@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ciberseguridad - 3º y 4º ESO</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --bg-base: #0f172a; --bg-panel: #1e293b; --accent-cyan: #22d3ee; --accent-blue: #3b82f6; --accent-red: #ef4444; --text-main: #f8fafc; --text-muted: #94a3b8; }
+        body { margin: 0; padding: 0; background-color: #020617; font-family: 'Inter', sans-serif; color: var(--text-main); display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        .slide { width: 92vw; max-width: 1280px; height: 92vh; max-height: 850px; background-color: var(--bg-base); border-radius: 12px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); position: absolute; overflow-y: auto; overflow-x: hidden; display: none; flex-direction: column; padding: 40px; box-sizing: border-box; border: 1px solid #334155; opacity: 0; transition: opacity 0.3s ease-in-out; }
+        /* Fluid typography */
+        h1 { font-size: clamp(2.5rem, 5vw, 3.5rem); font-weight: 700; background: linear-gradient(to right, var(--text-main), var(--accent-blue)); -webkit-background-clip: text; color: transparent; }
+        h2 { font-size: clamp(2rem, 4vw, 2.5rem); font-weight: 700; color: var(--accent-cyan); margin-bottom: 20px; border-bottom: 2px solid rgba(34, 211, 238, 0.2); padding-bottom: 10px; }
+        h3 { font-size: clamp(1.2rem, 2.5vw, 1.5rem); font-weight: 600; color: var(--text-main); margin-bottom: 10px; }
+        p, li { font-size: clamp(1rem, 1.5vw, 1.2rem); line-height: 1.5; color: var(--text-muted); }
+        .slide.active { display: flex; opacity: 1; z-index: 10; }
+        .slide::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: linear-gradient(rgba(34, 211, 238, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(34, 211, 238, 0.05) 1px, transparent 1px); background-size: 30px 30px; z-index: 0; pointer-events: none; opacity: 0.5; }
+        .slide > * { position: relative; z-index: 1; }
+        h1, h2, h3 { margin: 0; }
+
+        strong { color: var(--text-main); }
+        .content-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; flex-grow: 1; }
+        .panel { background-color: var(--bg-panel); padding: 30px; border-radius: 8px; border-left: 4px solid var(--accent-blue); }
+        .panel.alert { border-left-color: var(--accent-red); }
+        ul { list-style: none; padding: 0; margin: 0; }
+        li { margin-bottom: 15px; padding-left: 35px; position: relative; }
+        li::before { content: '>'; position: absolute; left: 0; color: var(--accent-cyan); font-family: 'Fira Code', monospace; font-weight: 600; }
+        .slide-footer { margin-top: auto; display: flex; justify-content: space-between; color: #64748b; font-size: 0.9rem; border-top: 1px solid #334155; padding-top: 20px; }
+        .nav-controls { position: fixed; bottom: 20px; right: 20px; display: flex; gap: 10px; z-index: 100; }
+        .nav-btn { background-color: rgba(30, 41, 59, 0.8); border: 1px solid #334155; color: var(--text-main); width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+        .nav-btn:hover { background-color: var(--accent-blue); color: white; }
+        
+        .code-block { background-color: #020617; font-family: 'Fira Code', monospace; padding: 25px; border-radius: 8px; border: 1px solid #334155; font-size: clamp(0.9rem, 1.2vw, 1.1rem); color: #cbd5e1; overflow-y: auto; height: 280px; text-align: left; position: relative; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
+        .code-prompt { color: var(--accent-cyan); font-weight: bold; }
+        .input-group { display: flex; gap: 15px; margin-bottom: 20px; }
+        .input-osint { flex-grow: 1; background: var(--bg-panel); border: 1px solid #334155; padding: 15px; color: var(--text-main); font-family: 'Fira Code', monospace; border-radius: 6px; font-size: 1.2rem; outline: none; }
+        .input-osint:focus { border-color: var(--accent-cyan); }
+        .btn-osint { padding: 15px 30px; background: var(--accent-cyan); color: #020617; font-weight: bold; font-family: 'Fira Code', monospace; font-size: 1.1rem; border: none; border-radius: 6px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 10px; }
+        .btn-osint:hover { background: #06b6d4; transform: scale(1.02); }
+        .home-btn { position: absolute; top: 60px; right: 60px; color: var(--text-muted); text-decoration: none; font-size: 1.5rem; z-index: 50; }
+        .home-btn:hover { color: var(--accent-cyan); }
+        .osint-profile { position: absolute; top: 20px; right: 20px; width: 100px; height: 100px; border-radius: 8px; border: 2px solid var(--accent-cyan); display: none; object-fit: cover; box-shadow: 0 0 15px rgba(34, 211, 238, 0.3); }
+        .cursor-blink { animation: blink 1s step-end infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+    </style>
+</head>
+<body>
+
+    <a href="hub.html" class="home-btn" title="Volver al Hub"><i class="fa-solid fa-house"></i></a>
+
+    <!-- SLIDE 1 -->
+    <div class="slide active">
+        <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; text-align: center;">
+            <i class="fa-solid fa-network-wired" style="font-size: 5rem; color: var(--accent-blue); margin-bottom: 30px;"></i>
+            <h1 style="margin-bottom: 20px;">Control y Defensas</h1>
+            <h3 style="color: var(--text-muted); font-size: 1.8rem; font-weight: 400;">Malware, Privacidad y Peligros en la Red (3º y 4º ESO)</h3>
+        </div>
+        <div class="slide-footer"><span>Bloque 1 - Introducción</span><span class="slide-counter"></span></div>
+    </div>
+
+    <!-- SLIDE 2 -->
+    <div class="slide">
+        <h2>01. Malware & Ransomware</h2>
+        <div class="content-grid">
+            <div class="panel alert">
+                <h3><i class="fa-solid fa-lock"></i> Ransomware (Secuestro Digital)</h3>
+                <ul>
+                    <li>No ralentiza tu PC para mostrarte publicidad; lo <strong>destruye</strong> y secuestra.</li>
+                    <li>Cifra todos los archivos de tu disco duro con algoritmos matemáticos imposibles de revertir (AES-256).</li>
+                    <li>Exigen rescate económico en Criptomonedas (Bitcoin). Sin la clave privada del atacante, la información familiar o de una empresa se pierde para siempre.</li>
+                </ul>
+            </div>
+            <div>
+                <img src="assets/ransomware_padlock.png" style="width: 100%; border-radius: 8px; border: 1px solid #334155; box-shadow: 0 10px 30px rgba(0,0,0,0.5); object-fit: cover; height: 100%;" alt="Ransomware Padlock">
+            </div>
+        </div>
+        <div class="slide-footer"><span>Bloque 2 - Malware Avanzado</span><span class="slide-counter"></span></div>
+    </div>
+
+    <!-- SLIDE 3 NUEVA -->
+    <div class="slide">
+        <h2>02. Botnets y Ataques DDoS</h2>
+        <div class="content-grid">
+            <div>
+                <img src="https://images.pexels.com/photos/5380590/pexels-photo-5380590.jpeg" style="width: 100%; border-radius: 8px; border: 1px solid #334155; box-shadow: 0 10px 30px rgba(0,0,0,0.5); object-fit: cover; height: 100%;" alt="Botnet Concept">
+            </div>
+            <div>
+                <div class="panel">
+                    <h3><i class="fa-solid fa-robot"></i> Redes Zombis (Botnets)</h3>
+                    <p>PCs y Móviles infectados en todo el mundo sin que sus dueños lo sepan, controlados por un solo <i>Comandante Hacker</i>.</p>
+                </div>
+                <div class="panel alert" style="margin-top: 20px;">
+                    <h3><i class="fa-solid fa-bolt"></i> Ataque DDoS</h3>
+                    <ul>
+                        <li>El Comandante ordena a su millón de ordenadores "zombi" que entren todos a la misma vez a los servidores de un banco o videojuego (ej: PlayStation Network).</li>
+                        <li>El servidor no soporta tanto tráfico simultáneo de IPs, colapsa por completo y "se cae". Todos los jugadores reales son expulsados.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="slide-footer"><span>Bloque 3 - Denegación de Servicio</span><span class="slide-counter"></span></div>
+    </div>
+
+    <!-- SLIDE 4 -->
+    <div class="slide">
+        <h2>03. Ingeniería Social (El Engaño)</h2>
+        <div class="content-grid">
+            <div>
+                <p>El eslabón más débil de la seguridad informática de cualquier corporación multimillonaria siempre es el humano que trabaja en ella. Los atacantes lo saben.</p>
+                <div class="panel" style="margin-top: 20px;">
+                    <h3><i class="fa-solid fa-masks-theater"></i> Spear Phishing</h3>
+                    <ul>
+                        <li>Los correos spam normales se detectan fácil. El Spear Phishing son correos diseñados específicamente <strong>solo para ti</strong>, usando datos que el atacante extrajo previamente de tus redes sociales (tu nombre, insti, perro, aficiones).</li>
+                        <li><strong>Secuestro de WhatsApp:</strong> "Hola, te he enviado un código SMS por error, ¿me lo pasas?". Así roban tu cuenta engañando a tu cerebro, no a la aplicación.</li>
+                    </ul>
+                </div>
+            </div>
+            <div>
+                <img src="https://images.pexels.com/photos/60504/security-protection-anti-virus-software-60504.jpeg" style="width: 100%; border-radius: 8px; border: 1px solid #334155; box-shadow: 0 10px 30px rgba(0,0,0,0.5); object-fit: cover; height: 100%;" alt="Social Engineering Mask">
+            </div>
+        </div>
+        <div class="slide-footer"><span>Bloque 4 - Factor Humano</span><span class="slide-counter"></span></div>
+    </div>
+
+    <!-- SLIDE 5: MEJORA OSINT -->
+    <div class="slide">
+        <h2>04. Laboratorio: OSINT Tracker</h2>
+        <p><strong>OSINT (Open Source Intelligence).</strong> Tu rastro digital te expone. Vamos a auditar al alias que tú quieras usando llamadas reales a bases de datos públicas mediante APIs.</p>
+        
+        <div class="input-group">
+            <input type="text" id="targetUser" class="input-osint" placeholder="Ingresa un usuario real de GitHub (Ej: defunkt, mojombo)..." autocomplete="off">
+            <button class="btn-osint" onclick="iniciarOSINT()"><i class="fa-solid fa-terminal"></i> RUN_SHERLOCK()</button>
+        </div>
+
+        <div class="code-block" id="term-container">
+            <img id="osint-profile-img" class="osint-profile" src="" alt="Profile">
+            <div id="term-output">
+                <span class="code-prompt">root@kali:~#</span> Esperando objetivo...<span class="cursor-blink">█</span><br>
+            </div>
+        </div>
+
+        <div class="slide-footer"><span>Bloque 5 - Actividad Práctica (OSINT)</span><span class="slide-counter"></span></div>
+    </div>
+
+    <!-- SLIDE 6 NUEVA -->
+    <div class="slide">
+        <h2>05. Deep Web vs Dark Web</h2>
+        <div class="content-grid">
+            <div class="panel">
+                <h3><i class="fa-solid fa-water"></i> Deep Web (90% de Internet)</h3>
+                <p>Es simplemente todo el internet que Google <strong>no puede buscar</strong>. No es ilegal. Son:</p>
+                <ul>
+                    <li>Tus bandejas de correo privado.</li>
+                    <li>Extranets de hospitales u oficinas.</li>
+                    <li>Foros privados con contraseña.</li>
+                </ul>
+            </div>
+            <div class="panel alert">
+                <h3><i class="fa-brands fa-tor-browser"></i> Dark Web (1% de Internet)</h3>
+                <p>Una pequeña fracción encriptada accesible solo con navegadores especiales (Red Tor). Cifra tu IP saltando entre nodos globales.</p>
+                <p style="margin-top: 15px;">Alberga foros de cibercrimen (mercados negros, compra Vandal de cuentas robadas, tráfico de datos), pero <strong>también</strong> la usan periodistas en países con gobiernos totalitarios para informar sin censura y evitar ser cazados.</p>
+            </div>
+        </div>
+        <div class="slide-footer"><span>Bloque 6 - La Red Oculta</span><span class="slide-counter"></span></div>
+    </div>
+
+    <!-- SLIDE 7 -->
+    <div class="slide">
+        <h2>06. El Ataque Silencioso (Reverse Shell)</h2>
+        <div class="content-grid">
+            <div>
+                <div class="panel">
+                    <h3>1. La Ejecución</h3>
+                    <p>Abres un archivo que parece legítimo (un PDF de apuntes, o al instalar un "crack" de un juego). En realidad, contiene un <em>Payload</em> (código inyectado).</p>
+                </div>
+                <div class="panel alert" style="margin-top: 20px;">
+                    <h3>2. El Control Total Remoto</h3>
+                    <p>Tu propio PC es el que "llama" silenciosamente y se conecta al servidor del hacker, abriéndole una puerta trasera. El hacker ahora puede:</p>
+                    <ul>
+                        <li>Encender tu webcam en silencio (sin encender su luz LED blanca/verde).</li>
+                        <li>Escuchar por tu micrófono todo lo que se habla en tu cuarto.</li>
+                        <li>Copiar archivos privados y leer todo lo que escribes (Keylogger).</li>
+                    </ul>
+                </div>
+            </div>
+            <div>
+                <img src="https://images.pexels.com/photos/5475791/pexels-photo-5475791.jpeg" style="width: 100%; border-radius: 8px; border: 1px solid #334155; box-shadow: 0 10px 30px rgba(0,0,0,0.5); object-fit: cover; height: 100%;" alt="Reverse Shell Webcam Hacking Concept">
+            </div>
+        </div>
+        <div class="slide-footer"><span>Bloque 7 - Infección y Control</span><span class="slide-counter"></span></div>
+    </div>
+
+    <!-- SLIDE 8 -->
+    <div class="slide">
+        <h2>07. Privacidad y Redes Públicas</h2>
+        <div class="content-grid">
+            <div>
+                <p>Conectarse al Wi-Fi gratuito de un hotel, Renfe o del aeropuerto es peor que gritar tu contraseña con un megáfono.</p>
+                <div class="panel alert" style="margin-top: 20px;">
+                    <h3><i class="fa-solid fa-arrows-down-to-line"></i> Ataque MitM (Man-in-the-Middle)</h3>
+                    <p>Cualquier persona conectada a ese mismo Wi-Fi puede usar herramientas sencillas (Wireshark) para "escuchar" el aire. Las ondas viajan libres.</p>
+                    <p>Si la web a la que entras no es muy segura, el cibercriminal interceptará silenciosamente todo lo que tecleas entre tu móvil y el router.</p>
+                </div>
+            </div>
+            <div>
+                <div class="panel" style="border-left-color: var(--accent-cyan); height: 100%;">
+                    <h3><i class="fa-solid fa-shield-halved"></i> ¿Cómo protegerse?</h3>
+                    <p style="margin-top: 15px;">La única forma segura de conectarse a una red pública es utilizando tú mismo una red privada: una <strong>VPN (Red Privada Virtual)</strong>.</p>
+                    <p style="margin-top: 15px;">La VPN empaqueta y cifra todos los datos que salen de tu móvil en una cápsula reforzada antes de soltarlos al Wi-Fi, volviéndote invisible en esa red pública.</p>
+                </div>
+            </div>
+        </div>
+        <div class="slide-footer"><span>Bloque 8 - Redes e Interceptación</span><span class="slide-counter"></span></div>
+    </div>
+
+    <!-- SLIDE 9 -->
+    <div class="slide">
+        <h2>08. Ciberdefensa Personal y Futuro</h2>
+        <p>Protegerte de todo esto pasa por aplicar disciplina en tus dispositivos. Además, el mundo necesita urgentemente profesionales que puedan contrarrestar estos ataques cada día.</p>
+        
+        <div style="display: flex; gap: 20px; margin-top: 30px;">
+            <div class="panel" style="flex: 1;">
+                <h3><i class="fa-solid fa-rotate"></i> Actualiza Siempre</h3>
+                <p>Las actualizaciones de iOS/Android/Windows no son "cambios visuales". Generalmente aplican parches urgentes de código contra vulnerabilidades (CVEs) recién descubiertas que los hackers ya están usando.</p>
+            </div>
+            <div class="panel" style="flex: 1; border-left-color: var(--accent-cyan);">
+                <h3><i class="fa-solid fa-user-lock"></i> Revisa los Permisos</h3>
+                <p>Deniégale automáticamente cámara, contactos y ubicación a cualquier aplicación de juego simple o editor de vídeo. No cruces tu vida digital sin pensar.</p>
+            </div>
+            <div class="panel" style="flex: 1; border-left-color: var(--accent-blue);">
+                <h3><i class="fa-solid fa-code"></i> Estudia Informática</h3>
+                <p>¿Te apasiona el combate digital? Extremadura tiene programas punteros. <strong>Estudiar Desarrollo o Sistemas en FP / Ingeniería</strong> te preparará para auditar bancos y cazar ciberdelincuentes reales.</p>
+            </div>
+        </div>
+        <div class="slide-footer"><span>Bloque 9 - Cierre y Conciencia</span><span class="slide-counter"></span></div>
+    </div>
+
+    <div class="nav-controls">
+        <button class="nav-btn" onclick="prevSlide()"><i class="fa-solid fa-chevron-left"></i></button>
+        <button class="nav-btn" onclick="nextSlide()"><i class="fa-solid fa-chevron-right"></i></button>
+    </div>
+
+    <script>
+        let currentSlide = 0; const slides = document.querySelectorAll('.slide');
+        
+        function updateCounters() {
+            document.querySelectorAll('.slide').forEach((slide, index) => {
+                const counter = slide.querySelector('.slide-counter');
+                if (counter) counter.innerText = (index + 1) + ' / ' + slides.length;
+            });
+        }
+
+        function showSlide(index) { 
+            if (index >= slides.length) currentSlide = 0; else if (index < 0) currentSlide = slides.length - 1; else currentSlide = index; 
+            slides.forEach(slide => slide.classList.remove('active')); slides[currentSlide].classList.add('active'); 
+        }
+        function nextSlide() { showSlide(currentSlide + 1); } function prevSlide() { showSlide(currentSlide - 1); }
+        document.addEventListener('keydown', (e) => { 
+            if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); } 
+            else if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); } 
+        });
+
+        window.onload = function() {
+            updateCounters();
+        };
+
+        let escaneando = false;
+
+        async function iniciarOSINT() {
+            if(escaneando) return;
+            const target = document.getElementById('targetUser').value.trim();
+            if(!target) return;
+            
+            const term = document.getElementById('term-output');
+            const profileImg = document.getElementById('osint-profile-img');
+            
+            profileImg.style.display = 'none';
+            profileImg.src = '';
+            
+            term.innerHTML = `<span class="code-prompt">root@kali:~#</span> sherlock --timeout 1 ${target}<br><br><span style="color: #94a3b8">[*] Inicializando motor OSINT sobre 300 APIs (v.2026.4)...</span><br>`;
+            escaneando = true;
+
+            await new Promise(r => setTimeout(r, 800));
+            term.innerHTML += `<span style="color: #94a3b8">[*] Extrayendo metadata global para alias '${target}'</span><br><br>`;
+            
+            // Llama a API Real de Github - Este es un ejemplo de investigación "real" OSINT
+            try {
+                term.innerHTML += `<span style="color: #cbd5e1">[*] API_CALL => https://api.github.com/users/${target}</span><br>`;
+                term.scrollTop = term.scrollHeight;
+                const ghRes = await fetch(`https://api.github.com/users/${target}`);
+                
+                await new Promise(r => setTimeout(r, 600)); // Suspense
+
+                if (ghRes.ok) {
+                    const ghData = await ghRes.json();
+                    term.innerHTML += `<span style="color:#10b981; font-weight:bold;">[+] ENCONTRADO</span> - GitHub (ID: ${ghData.id || 'N/A'}) - Perfil: <a href="${ghData.html_url}" target="_blank" style="color:#2563eb">${ghData.html_url}</a><br>`;
+                    if(ghData.name) term.innerHTML += `    <i class="fa-solid fa-arrow-turn-up fa-rotate-90" style="color:#64748b;"></i> <span>Nombre real extraído: "${ghData.name}"</span><br>`;
+                    if(ghData.company) term.innerHTML += `    <i class="fa-solid fa-arrow-turn-up fa-rotate-90" style="color:#64748b;"></i> <span>Empresa asociada: "${ghData.company}"</span><br>`;
+                    
+                    profileImg.src = ghData.avatar_url;
+                    profileImg.style.display = 'block';
+                } else {
+                    term.innerHTML += `<span style="color:#ef4444; font-weight:bold;">[-] NO ENCONTRADO</span> - GitHub<br>`;
+                }
+            } catch(e) {
+                term.innerHTML += `<span style="color:#ef4444; font-weight:bold;">[-] ERROR RED</span> - Fallo en resolución DNS GitHub<br>`;
+            }
+            term.scrollTop = term.scrollHeight;
+
+            // Simular el resto con determinismo en base al nombre
+            const simPlataformas = ['Instagram', 'TikTok', 'Twitch', 'Roblox', 'Reddit', 'Steam (Comunidad)'];
+            
+            for(let i = 0; i < simPlataformas.length; i++) {
+                await new Promise(r => setTimeout(r, 400 + Math.random() * 600)); 
+                const randCode = target.length * (i + 5); 
+                const existe = (randCode % 3) !== 0; 
+                
+                const color = existe ? '#10b981' : '#ef4444';
+                const status = existe ? '[+] ENCONTRADO' : '[-] NO ENCONTRADO';
+                const url = existe ? `https://${simPlataformas[i].toLowerCase().replace(' (comunidad)','').trim()}.com/${target}` : '';
+                
+                term.innerHTML += `<span style="color:${color}; font-weight:bold;">${status}</span> - ${simPlataformas[i]}${existe ? ': <a href="'+url+'" target="_blank" style="color:#2563eb">'+url+'</a>' : ''}<br>`;
+                term.scrollTop = term.scrollHeight;
+            }
+            
+            term.innerHTML += `<br><span style="color: #94a3b8">[*] Mapeo finalizado. Reporte exportado a /root/reports/${target}.txt</span><br><span class="code-prompt">root@kali:~#</span> <span class="cursor-blink">█</span>`;
+            term.scrollTop = term.scrollHeight;
+            escaneando = false;
+        }
+    </script>
+</body>
+</html>
